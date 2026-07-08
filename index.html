@@ -1,1 +1,197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROJECT : CONTOH SOAL</title>
+    <style>
+        /* Pengaturan Dasar Halaman */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #d9f0fe; 
+        }
 
+        /* Container Utama - Memaksa Rasio 16:9 dan Fit to Screen (Tidak Terpotong) */
+        .app-container {
+            position: relative;
+            width: 100%;
+            max-width: calc(100vh * (16 / 9)); 
+            aspect-ratio: 16 / 9;
+            background-color: #e5f3fa; 
+            overflow: hidden;
+            /* Efek bayangan (box-shadow) telah dihapus agar menyatu dengan background */
+        }
+
+        /* Pengaturan Standar Slide & Efek Transisi "Pop" 300ms */
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: scale(0.9);
+            pointer-events: none;
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            z-index: 1;
+        }
+
+        /* Class untuk menampilkan slide aktif */
+        .slide.active {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        /* Memastikan gambar proporsional dan tidak pecah */
+        .slide img, .popup-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            pointer-events: none; 
+        }
+
+        /* Area Hitbox Transparan untuk interaksi sentuh/klik */
+        .hitbox {
+            position: absolute;
+            cursor: pointer;
+            z-index: 20;
+        }
+
+        /* Mapping Hitbox Slide 1 (Tombol A dan B) */
+        #hitbox-1A { bottom: 15%; left: 8%; width: 40%; height: 28%; border-radius: 10px; }
+        #hitbox-1B { bottom: 15%; right: 8%; width: 40%; height: 28%; border-radius: 10px; }
+
+        /* Mapping Hitbox Slide 2 (Area tengah yang besar) */
+        .hitbox-mid { top: 50%; left: 25%; width: 50%; height: 35%; transform: translateY(-50%); border-radius: 15px; }
+
+        /* Mapping Hitbox Slide 3 (Klik dimana saja) */
+        #hitbox-3 { top: 0; left: 0; width: 100%; height: 100%; }
+
+        /* Pengaturan Popup */
+        .popup-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: scale(0.9);
+            pointer-events: none;
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            z-index: 100;
+        }
+
+        /* Class aktif untuk memunculkan Popup */
+        .popup-container.active {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div id="slide1" class="slide active">
+            <img src="slide1.png" alt="Contoh Soal">
+            <div id="hitbox-1A" class="hitbox" onclick="goToSlide('slide2b')"></div>
+            <div id="hitbox-1B" class="hitbox" onclick="goToSlide('slide2a')"></div>
+        </div>
+
+        <div id="slide2a" class="slide">
+            <img src="slide2a.png" alt="Feedback Salah">
+            <div class="hitbox hitbox-mid" onclick="goToSlide('slide3')"></div>
+        </div>
+
+        <div id="slide2b" class="slide">
+            <img src="slide2b.png" alt="Feedback Benar">
+            <div class="hitbox hitbox-mid" onclick="goToSlide('slide3')"></div>
+        </div>
+
+        <div id="slide3" class="slide">
+            <img src="slide3.png" alt="Pembahasan">
+            <div id="hitbox-3" class="hitbox" onclick="togglePopup(true)"></div>
+        </div>
+
+        <div id="popup3" class="popup-container" onclick="togglePopup(false)">
+            <img src="popup3.png" alt="Popup Soal">
+            <div class="hitbox" style="top: 0; left: 0; width: 100%; height: 100%;"></div>
+        </div>
+
+    </div>
+
+    <script>
+        /**
+         * Fungsi untuk berpindah slide (Alur Paksa Maju)
+         */
+        function goToSlide(targetId) {
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            const targetSlide = document.getElementById(targetId);
+            if (targetSlide) {
+                targetSlide.classList.add('active');
+            }
+        }
+
+        /**
+         * Fungsi untuk menampilkan / menyembunyikan popup
+         */
+        function togglePopup(show) {
+            const popup = document.getElementById('popup3');
+            if (show) {
+                popup.classList.add('active');
+            } else {
+                popup.classList.remove('active');
+            }
+        }
+
+        /**
+         * Event Listener untuk Keyboard
+         */
+        document.addEventListener('keydown', function(event) {
+            const key = event.key.toLowerCase(); 
+
+            const popupActive = document.getElementById('popup3').classList.contains('active');
+            const slide1Active = document.getElementById('slide1').classList.contains('active');
+            const slide2aActive = document.getElementById('slide2a').classList.contains('active');
+            const slide2bActive = document.getElementById('slide2b').classList.contains('active');
+            const slide3Active = document.getElementById('slide3').classList.contains('active');
+
+            if (key === ' ' || key === 'enter') {
+                event.preventDefault(); 
+                
+                if (popupActive) {
+                    togglePopup(false); 
+                } else if (slide2aActive || slide2bActive) {
+                    goToSlide('slide3'); 
+                } else if (slide3Active) {
+                    togglePopup(true); 
+                }
+            }
+
+            // JAWABAN A BENAR PADA KEYBOARD
+            if (slide1Active && !popupActive) {
+                if (key === 'a') {
+                    goToSlide('slide2b');
+                } else if (key === 'b') {
+                    goToSlide('slide2a');
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
